@@ -130,7 +130,7 @@ Class PDF extends mPDF {
                             if (file_exists($font_file)) {
                                 File::copy($font_file, base_path('vendor/mpdf/mpdf/ttfonts/' . $font));
                             } else {
-                                throw new Exception('Your font file "' . $font . '" not exist.');
+                                throw new Exception('Your font file "' . $font_file . '" not exist.');
                             }
                         }
                     }
@@ -222,5 +222,4 @@ Class PDF extends mPDF {
     public function Stream($filename = 'document.pdf') {
         return $this->Output($filename, 'I');
     }
-
 }
