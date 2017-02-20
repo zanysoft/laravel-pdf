@@ -1,4 +1,4 @@
-# Laravel PDF: PDF wrapper for Laravel 5.2
+# Laravel PDF: PDF generator for Laravel 5.2
 
 > Easily generate PDF documents from HTML right inside of Laravel using this PDF wrapper.
 
@@ -18,7 +18,7 @@
 Require this package in your `composer.json` or install it by running:
 
 ```
-composer require zanysoft/laravel-PDF
+composer require zanysoft/laravel-pdf
 ```
 
 To start using Laravel, add the Service Provider and the Facade to your `config/app.php`:
