@@ -146,6 +146,7 @@ Class PDF extends mPDF {
         $font_data = include(__DIR__ . '/fontdata.php');
 
         foreach ($fonts as $key => $val) {
+            $key = strtolower($key);
             if (is_array($val)) {
 
                 foreach (['R', 'B', 'I', 'BI'] as $style) {
