@@ -8,6 +8,16 @@
       "email": "info@zanysoft.co"
     }
   ],
+  "extra": {
+        "laravel": {
+            "providers": [
+                "ZanySoft\\LaravelPDF\\PdfServiceProvider"
+            ],
+            "aliases": {
+                "PDF" : "ZanySoft\\LaravelPDF\\Facades\\PDF"
+            }
+        }
+    },
   "minimum-stability": "dev",
   "require": {
     "php": ">=5.4.0",
