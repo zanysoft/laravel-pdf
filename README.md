@@ -1,4 +1,4 @@
-# Laravel PDF: PDF generator for Laravel 5.2
+# Laravel PDF: PDF generator for Laravel 5.x | 6.x | 7.x
 
 > Easily generate PDF documents from HTML right inside of Laravel using this PDF wrapper.
 
