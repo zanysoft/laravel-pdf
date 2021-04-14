@@ -2,16 +2,21 @@
 
 namespace ZanySoft\LaravelPDF;
 
-use Config, Exception, File, View;
-use mPDF;
+use Config;
+use Exception;
+use File;
+use Mpdf\Mpdf;
+use View;
 
 //use font_data
 
-Class PDF extends mPDF {
+class PDF extends Mpdf
+{
 
     protected $config = [];
 
-    public function __construct($configs = []) {
+    public function __construct($configs = [])
+    {
 
         $config = Config::get('pdf');
 
@@ -25,25 +30,26 @@ Class PDF extends mPDF {
             define('_MPDF_SYSTEM_TTFONTS_CONFIG', __DIR__ . '/../mpdf_ttfonts_config.php');
         }
 
-        parent::__construct(
-            $this->getConfig('mode'),              // mode - default ''
-            $this->getConfig('format'),            // format - A4, for example, default ''
-            $this->getConfig('default_font_size'), // font size - default 0
-            $this->getConfig('default_font'),      // default font family
-            $this->getConfig('margin_left'),       // margin_left
-            $this->getConfig('margin_right'),      // margin right
-            $this->getConfig('margin_top'),        // margin top
-            $this->getConfig('margin_bottom'),     // margin bottom
-            $this->getConfig('margin_header'),     // margin header
-            $this->getConfig('margin_footer'),     // margin footer
-            $this->getConfig('orientation')        // L - landscape, P - portrait
+        parent::__construct([
+                'mode' => $this->getConfig('mode'), // mode - default ''
+                'format' => $this->getConfig('format'), // format - A4, for example, default ''
+                'default_font_size' => $this->getConfig('default_font_size'),// font size - default 0
+                'default_font' => $this->getConfig('default_font'), // default font family
+                'margin_left' => $this->getConfig('margin_left'), // margin_left
+                'margin_right' => $this->getConfig('margin_right'), // margin right
+                'margin_top' => $this->getConfig('margin_top'), // margin top
+                'margin_bottom' => $this->getConfig('margin_bottom'), // margin bottom
+                'margin_header' => $this->getConfig('margin_header'), // margin header
+                'margin_footer' => $this->getConfig('margin_footer'), // margin footer
+                'orientation' => $this->getConfig('orientation'), // L - landscape, P - portrait
+            ]
         );
 
         $font_data = include(__DIR__ . '/fontdata.php');
         if (is_array($font_data)) {
             $this->fontdata = array_merge($this->fontdata, $font_data);
 
-            foreach ($font_data AS $f => $fs) {
+            foreach ($font_data as $f => $fs) {
                 if (isset($fs['R']) && $fs['R']) {
                     $this->available_unifonts[] = $f;
                 }
@@ -66,34 +72,39 @@ Class PDF extends mPDF {
         $this->SetWatermarkText($this->getConfig('watermark'));
         $this->SetDisplayMode($this->getConfig('display_mode'));
         $this->SetDirectionality($this->getConfig('dir') ? $this->getConfig('dir') : $this->getConfig('direction'));
-        $this->showWatermarkText  = $this->getConfig('show_watermark');
-        $this->watermark_font     = $this->getConfig('watermark_font');
+        $this->showWatermarkText = $this->getConfig('show_watermark');
+        $this->watermark_font = $this->getConfig('watermark_font');
         $this->watermarkTextAlpha = $this->getConfig('watermark_text_alpha');
 
     }
 
-    public function Make() {
+    public function Make()
+    {
         return $this;
     }
 
-    public function SetDirection($dir) {
+    public function SetDirection($dir)
+    {
         $this->SetDirectionality($dir);
 
         return $this;
     }
 
-    public function loadHTML($html) {
+    public function loadHTML($html)
+    {
 
         $wm = strcode2utf($html);
 
         $this->WriteHTML($wm);
     }
 
-    public function loadFile($file, $config = []) {
+    public function loadFile($file, $config = [])
+    {
         $this->WriteHTML(File::get($file));
     }
 
-    public function loadView($view, $data = [], $mergeData = []) {
+    public function loadView($view, $data = [], $mergeData = [])
+    {
         $this->WriteHTML(View::make($view, $data, $mergeData)->render());
     }
 
@@ -105,7 +116,8 @@ Class PDF extends mPDF {
      *       ],
      *   ];
      */
-    public function addCustomFont($fonts_list, $is_unicode = false) {
+    public function addCustomFont($fonts_list, $is_unicode = false)
+    {
 
         if (empty($fonts_list) || !isset($fonts_list)) {
             throw new Exception('Please add font data in EmbedFont() function.');
@@ -123,7 +135,7 @@ Class PDF extends mPDF {
 
                 foreach (['R', 'B', 'I', 'BI'] as $style) {
                     if (isset($fs[$style]) && $fs[$style]) {
-                        $font      = $fs[$style];
+                        $font = $fs[$style];
                         $font_file = $custom_font_path . '/' . $font;
 
                         if (!file_exists(base_path('vendor/mpdf/mpdf/ttfonts/' . $font))) {
@@ -141,7 +153,8 @@ Class PDF extends mPDF {
         $this->addFontData($fonts_list, $is_unicode);
     }
 
-    protected function addFontData($fonts, $unicode = false) {
+    protected function addFontData($fonts, $unicode = false)
+    {
 
         $font_data = include(__DIR__ . '/fontdata.php');
 
@@ -151,13 +164,13 @@ Class PDF extends mPDF {
 
                 foreach (['R', 'B', 'I', 'BI'] as $style) {
                     if (isset($val[$style]) && $val[$style]) {
-                        $font                       = $val[$style];
+                        $font = $val[$style];
                         $this->available_unifonts[] = $key . trim($style, 'R');
                     }
                 }
                 if ($unicode) {
                     $val['useKashida'] = 75;
-                    $val['useOTL']     = 0xFF;
+                    $val['useOTL'] = 0xFF;
                 }
                 $font_data[$key] = $val;
 
@@ -179,7 +192,8 @@ Class PDF extends mPDF {
         fclose($handle);
     }
 
-    protected function array2str($arr) {
+    protected function array2str($arr)
+    {
         $retStr = '';
         if (is_array($arr)) {
             $retStr .= "[ \r";
@@ -200,7 +214,8 @@ Class PDF extends mPDF {
         return $retStr;
     }
 
-    protected function getConfig($key) {
+    protected function getConfig($key)
+    {
         if (isset($this->config[$key])) {
             return $this->config[$key];
         } else {
@@ -208,19 +223,23 @@ Class PDF extends mPDF {
         }
     }
 
-    public function Embed($name, $dest = 'S') {
+    public function embed($name, $dest = 'S')
+    {
         return $this->Output($name, $dest);
     }
 
-    public function Save($filename) {
+    public function save($filename)
+    {
         return $this->Output($filename, 'F');
     }
 
-    public function Download($filename = 'document.pdf') {
+    public function download($filename = 'document.pdf')
+    {
         return $this->Output($filename, 'D');
     }
 
-    public function Stream($filename = 'document.pdf') {
+    public function stream($filename = 'document.pdf')
+    {
         return $this->Output($filename, 'I');
     }
 }
