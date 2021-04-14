@@ -56,7 +56,7 @@ function generate_pdf() {
 	];
 	$pdf = PDF::::Make();
 	$pdf->loadView('pdf.document', $data);
-	return $pdf->Stream('document.pdf');
+	return $pdf->stream('document.pdf');
 }
 ```
 or
@@ -70,7 +70,7 @@ function generate_pdf() {
 	];
 	$pdf = new PDF();
 	$pdf->loadView('pdf.document', $data);
-	return $pdf->Stream('document.pdf');
+	return $pdf->stream('document.pdf');
 }
 
 ```
@@ -79,29 +79,29 @@ If you want to generate from html content:
 ```php
     $content = "Hello this is first pdf file."
 	$pdf->loadHTML($content);
-	return $pdf->Stream('document.pdf');
+	return $pdf->stream('document.pdf');
 ```
 
 If you want to generate from files:
 ```php
     $file = "file.txt"
 	$pdf->loadFile($file);
-	return $pdf->Stream('document.pdf');
+	return $pdf->stream('document.pdf');
 ```
 
 If you want download pdf file:
 ```php
-	return $pdf->Embed('document.pdf');
+	return $pdf->embed('document.pdf');
 ```
 
 If you want to save pdf to server:
 ```php
-	return $pdf->Save('with-complete-path/document.pdf');
+	return $pdf->save('with-complete-path/document.pdf');
 ```
 
 If you want add pdf file as attachment to email:
 ```php
-	return $pdf->Embed('document.pdf');
+	return $pdf->embed('document.pdf');
 ```
 
 ### Headers and Footers
@@ -184,7 +184,7 @@ function generate_pdf() {
 	$pdf->SetProtection(['copy', 'print'], 'user_pass', 'owner_pass')
 	$pdf->loadView('pdf.document', $data);
 
-	return $pdf->Stream('document.pdf');
+	return $pdf->stream('document.pdf');
 }
 ```
 
