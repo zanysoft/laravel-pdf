@@ -6,6 +6,8 @@ use Config;
 use Exception;
 use File;
 use Mpdf\Mpdf;
+use Mpdf\Output\Destination;
+use Mpdf\Utils\UtfString;
 use View;
 
 //use font_data
@@ -25,10 +27,6 @@ class PDF extends Mpdf
         }
 
         $this->config = array_merge($config, $configs);
-
-        if (Config::has('pdf.custom_font_path') && Config::has('pdf.custom_font_data')) {
-            define('_MPDF_SYSTEM_TTFONTS_CONFIG', __DIR__ . '/../mpdf_ttfonts_config.php');
-        }
 
         parent::__construct([
                 'mode' => $this->getConfig('mode'), // mode - default ''
@@ -69,12 +67,17 @@ class PDF extends Mpdf
 
         $this->SetTitle($this->getConfig('title'));
         $this->SetAuthor($this->getConfig('author'));
+        
         $this->SetWatermarkText($this->getConfig('watermark'));
         $this->SetDisplayMode($this->getConfig('display_mode'));
         $this->SetDirectionality($this->getConfig('dir') ? $this->getConfig('dir') : $this->getConfig('direction'));
         $this->showWatermarkText = $this->getConfig('show_watermark');
         $this->watermark_font = $this->getConfig('watermark_font');
         $this->watermarkTextAlpha = $this->getConfig('watermark_text_alpha');
+
+        if (Config::has('pdf.custom_font_path') && Config::get('pdf.custom_font_path')) {
+            $this->AddFontDirectory(Config::get('pdf.custom_font_path'));
+        }
 
     }
 
@@ -92,8 +95,7 @@ class PDF extends Mpdf
 
     public function loadHTML($html)
     {
-
-        $wm = strcode2utf($html);
+        $wm = UtfString::strcode2utf($html);
 
         $this->WriteHTML($wm);
     }
@@ -223,23 +225,23 @@ class PDF extends Mpdf
         }
     }
 
-    public function embed($name, $dest = 'S')
+    public function embed($name = 'document.pdf')
     {
-        return $this->Output($name, $dest);
+        return $this->Output($name, Destination::STRING_RETURN);
     }
 
-    public function save($filename)
+    public function save($filename = 'document.pdf')
     {
-        return $this->Output($filename, 'F');
+        return $this->Output($filename, Destination::STRING_RETURN);
     }
 
     public function download($filename = 'document.pdf')
     {
-        return $this->Output($filename, 'D');
+        return $this->Output($filename, Destination::DOWNLOAD);
     }
 
     public function stream($filename = 'document.pdf')
     {
-        return $this->Output($filename, 'I');
+        return $this->Output($filename, Destination::INLINE);
     }
 }
