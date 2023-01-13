@@ -1,10 +1,13 @@
 {
   "name": "zanysoft/laravel-pdf",
-  "description": "Laravel PDF - for generating pdf invice or documents.",
+  "description": "Laravel PDF - for generating pdf invoice or documents with mPDF wrapper.",
   "license": "MIT",
   "keywords": [
         "pdf",
+        "mpdf",
         "laravel-pdf",
+        "invoice",
+        "documents",
         "pdf-invoice",
         "pdf-documents",
         "laravel",
