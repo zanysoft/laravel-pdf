@@ -54,9 +54,9 @@ function generate_pdf() {
 	$data = [
 		'foo' => 'bar'
 	];
-	$pdf = PDF::::Make();
+	$pdf = PDF::Make('document.pdf');
 	$pdf->loadView('pdf.document', $data);
-	return $pdf->stream('document.pdf');
+	return $pdf->stream();
 }
 ```
 or
@@ -143,7 +143,7 @@ You can use your own fonts in the generated PDFs. The TTF files have to be locat
 ```
 And then:
 ```php
-    $font_data = array(
+    $fontdata = array(
         'examplefont' => [
             'R' => 'ExampleFont-Regular.ttf',      // regular font
             'B' => 'ExampleFont-Bold.ttf',         // optional: bold font
@@ -153,7 +153,7 @@ And then:
         // ...add as many as you want.
     );
 
-	$pdf->addCustomFont($font_data, true);
+	$pdf->addCustomFont($fontdata, true);
 	// If your font file is unicode and "OpenType Layout" then set true. Default value is false.
 ```
 

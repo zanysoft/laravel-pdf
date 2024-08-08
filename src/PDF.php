@@ -2,21 +2,26 @@
 
 namespace ZanySoft\LaravelPDF;
 
-use Config;
 use Exception;
-use File;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\File;
 use Mpdf\Mpdf;
 use Mpdf\Output\Destination;
 use Mpdf\Utils\UtfString;
 use View;
-
-//use font_data
 
 class PDF extends Mpdf
 {
 
     protected $config = [];
 
+    protected $filename = 'document.pdf';
+
+    /**
+     * @param $configs
+     * @throws \Mpdf\MpdfException
+     */
     public function __construct($configs = [])
     {
 
@@ -30,16 +35,16 @@ class PDF extends Mpdf
 
         parent::__construct([
                 'mode' => $this->getConfig('mode'), // mode - default ''
-                'format' => $this->getConfig('format'), // format - A4, for example, default ''
+                'format' => $this->getConfig('format', 'A4'), // format - A4, for example, default ''
                 'default_font_size' => $this->getConfig('default_font_size'),// font size - default 0
                 'default_font' => $this->getConfig('default_font'), // default font family
-                'margin_left' => $this->getConfig('margin_left'), // margin_left
-                'margin_right' => $this->getConfig('margin_right'), // margin right
-                'margin_top' => $this->getConfig('margin_top'), // margin top
-                'margin_bottom' => $this->getConfig('margin_bottom'), // margin bottom
-                'margin_header' => $this->getConfig('margin_header'), // margin header
-                'margin_footer' => $this->getConfig('margin_footer'), // margin footer
-                'orientation' => $this->getConfig('orientation'), // L - landscape, P - portrait
+                'margin_left' => $this->getConfig('margin_left', 10), // margin_left
+                'margin_right' => $this->getConfig('margin_right', 10), // margin right
+                'margin_top' => $this->getConfig('margin_top', 10), // margin top
+                'margin_bottom' => $this->getConfig('margin_bottom', 10), // margin bottom
+                'margin_header' => $this->getConfig('margin_header', 0), // margin header
+                'margin_footer' => $this->getConfig('margin_footer', 0), // margin footer
+                'orientation' => $this->getConfig('orientation' , 'P'), // L - landscape, P - portrait
             ]
         );
 
@@ -67,25 +72,65 @@ class PDF extends Mpdf
 
         $this->SetTitle($this->getConfig('title'));
         $this->SetAuthor($this->getConfig('author'));
-        
-        $this->SetWatermarkText($this->getConfig('watermark'));
-        $this->SetDisplayMode($this->getConfig('display_mode'));
-        $this->SetDirectionality($this->getConfig('dir') ? $this->getConfig('dir') : $this->getConfig('direction'));
-        $this->showWatermarkText = $this->getConfig('show_watermark');
-        $this->watermark_font = $this->getConfig('watermark_font');
-        $this->watermarkTextAlpha = $this->getConfig('watermark_text_alpha');
 
-        if (Config::has('pdf.custom_font_path') && Config::get('pdf.custom_font_path')) {
-            $this->AddFontDirectory(Config::get('pdf.custom_font_path'));
+        $show_watermark = $this->getConfig('show_watermark');
+        $watermark = $this->getConfig('watermark');
+
+        if ($show_watermark && $watermark) {
+            $this->showWatermarkText = $show_watermark;
+            $this->SetWatermarkText($watermark);
         }
 
+        if ($display_mode = $this->getConfig('display_mode')) {
+            $this->SetDisplayMode($display_mode);
+        }
+
+        $direction = ($this->getConfig('dir') ?: $this->getConfig('direction')) == 'rtl' ? 'rtl' : 'ltr';
+
+        $this->SetDirectionality($direction);
+
+        if ($watermark_font = $this->getConfig('watermark_font')) {
+            $this->watermark_font = $watermark_font;
+        }
+
+        $this->watermarkTextAlpha = $this->getConfig('watermark_text_alpha', 0.1);
+
+        if ($custom_font_path = Config::get('pdf.custom_font_path')) {
+            $custom_font_path = rtrim($custom_font_path . '/') . '/';
+            $this->AddFontDirectory(Config::get('pdf.custom_font_path'));
+        }
     }
 
-    public function Make()
+    /**
+     * @param string $filename
+     * @return $this
+     */
+    public function Make(string $filename = ''): PDF
     {
+        if ($filename) {
+            $this->filename = $filename;
+        }
         return $this;
     }
 
+    /**
+     * @param string $key
+     * @param $default
+     * @return mixed
+     */
+    protected function getConfig(string $key, $default = null)
+    {
+        if (isset($this->config[$key])) {
+            return $this->config[$key];
+        } else {
+            return Config::get('pdf.' . $key, $default);
+        }
+    }
+
+    /**
+     * @param $dir
+     * @return $this
+     */
     public function SetDirection($dir)
     {
         $this->SetDirectionality($dir);
@@ -93,35 +138,64 @@ class PDF extends Mpdf
         return $this;
     }
 
-    public function loadHTML($html)
+    /**
+     * @param string|Htmlable $html
+     * @return void
+     * @throws \Mpdf\MpdfException
+     */
+    public function loadHTML(string|Htmlable $html)
     {
+        if ($html instanceof Htmlable) {
+            $html = $html->toHtml();
+        }
+
         $wm = UtfString::strcode2utf($html);
 
         $this->WriteHTML($wm);
     }
 
-    public function loadFile($file, $config = [])
+    /**
+     * @param $file File path
+     * @param $config
+     * @return void
+     * @throws \Mpdf\MpdfException
+     */
+    public function loadFile(string $file)
     {
         $this->WriteHTML(File::get($file));
     }
 
+    /**
+     * @param $view
+     * @param $data
+     * @param $mergeData
+     * @return void
+     * @throws \Mpdf\MpdfException
+     */
     public function loadView($view, $data = [], $mergeData = [])
     {
         $this->WriteHTML(View::make($view, $data, $mergeData)->render());
     }
 
-    /*
+    /**
+     * Add custom font to pdf
+     *
      * $fontdata = [
      *       'sourcesanspro' => [
      *           'R' => 'SourceSansPro-Regular.ttf',
      *           'B' => 'SourceSansPro-Bold.ttf',
      *       ],
      *   ];
+     *
+     * @param array $fontdata
+     * @param bool $is_unicode
+     * @return void
+     * @throws Exception
      */
-    public function addCustomFont($fonts_list, $is_unicode = false)
+    public function addCustomFont(array $fontdata, bool $is_unicode = false)
     {
 
-        if (empty($fonts_list) || !isset($fonts_list)) {
+        if (empty($fontdata) || !isset($fontdata)) {
             throw new Exception('Please add font data in EmbedFont() function.');
         }
 
@@ -132,7 +206,7 @@ class PDF extends Mpdf
             $custom_font_path = rtrim($custom_font_path, '/');
         }
 
-        foreach ($fonts_list as $f => $fs) {
+        foreach ($fontdata as $f => $fs) {
             if (is_array($fs)) {
 
                 foreach (['R', 'B', 'I', 'BI'] as $style) {
@@ -152,9 +226,14 @@ class PDF extends Mpdf
             }
         }
 
-        $this->addFontData($fonts_list, $is_unicode);
+        $this->addFontData($fontdata, $is_unicode);
     }
 
+    /**
+     * @param $fonts
+     * @param $unicode
+     * @return void
+     */
     protected function addFontData($fonts, $unicode = false)
     {
 
@@ -194,6 +273,10 @@ class PDF extends Mpdf
         fclose($handle);
     }
 
+    /**
+     * @param $arr
+     * @return string
+     */
     protected function array2str($arr)
     {
         $retStr = '';
@@ -216,32 +299,43 @@ class PDF extends Mpdf
         return $retStr;
     }
 
-    protected function getConfig($key)
+    /**
+     * @param string $name
+     * @return string|null
+     * @throws \Mpdf\MpdfException
+     */
+    public function embed(string $filename = '')
     {
-        if (isset($this->config[$key])) {
-            return $this->config[$key];
-        } else {
-            return Config::get('pdf.' . $key);
-        }
+        return $this->Output($name ?: $this->filename, Destination::STRING_RETURN);
     }
 
-    public function embed($name = 'document.pdf')
+    /**
+     * @param string $filename
+     * @return string|null
+     * @throws \Mpdf\MpdfException
+     */
+    public function save(string $filename = '')
     {
-        return $this->Output($name, Destination::STRING_RETURN);
+        return $this->Output($filename ?: $this->filename, Destination::STRING_RETURN);
     }
 
-    public function save($filename = 'document.pdf')
+    /**
+     * @param string $filename
+     * @return string|null
+     * @throws \Mpdf\MpdfException
+     */
+    public function download(string $filename = '')
     {
-        return $this->Output($filename, Destination::STRING_RETURN);
+        return $this->Output($filename ?: $this->filename, Destination::DOWNLOAD);
     }
 
-    public function download($filename = 'document.pdf')
+    /**
+     * @param string $filename
+     * @return string|null
+     * @throws \Mpdf\MpdfException
+     */
+    public function stream(string $filename = '')
     {
-        return $this->Output($filename, Destination::DOWNLOAD);
-    }
-
-    public function stream($filename = 'document.pdf')
-    {
-        return $this->Output($filename, Destination::INLINE);
+        return $this->Output($filename ?: $this->filename, Destination::INLINE);
     }
 }

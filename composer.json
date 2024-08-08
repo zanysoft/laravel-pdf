@@ -1,42 +1,42 @@
 {
-  "name": "zanysoft/laravel-pdf",
-  "description": "Laravel PDF - for generating pdf invoice or documents with mPDF wrapper.",
-  "license": "MIT",
-  "keywords": [
+    "name": "zanysoft/laravel-pdf",
+    "description": "Laravel PDF - for generating pdf invoice or documents with mPDF wrapper.",
+    "license": "MIT",
+    "keywords": [
+        "laravel-pdf",
         "pdf",
         "mpdf",
-        "laravel-pdf",
         "invoice",
         "documents",
         "pdf-invoice",
         "pdf-documents",
         "laravel",
         "adobe"
-   ],
-  "authors": [
-    {
-      "name": "Zany Soft",
-      "email": "info@zanysoft.net"
-    }
-  ],
-  "require": {
-    "php": "^7.1 || ^8.0",
-    "mpdf/mpdf": "^8.0.10"
-  },
-  "autoload": {
-    "psr-4": {
-      "ZanySoft\\LaravelPDF\\": "src/"
-    }
-  },
-  "extra": {
+    ],
+    "authors": [
+        {
+            "name": "Zany Soft",
+            "email": "zanysoft@hotmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.0",
+        "mpdf/mpdf": "^8.0.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "ZanySoft\\LaravelPDF\\": "src/"
+        }
+    },
+    "extra": {
         "laravel": {
             "providers": [
                 "ZanySoft\\LaravelPDF\\PdfServiceProvider"
             ],
             "aliases": {
-                "PDF" : "ZanySoft\\LaravelPDF\\Facades\\PDF"
+                "PDF": "ZanySoft\\LaravelPDF\\Facades\\PDF"
             }
         }
     },
-  "minimum-stability": "stable"
+    "minimum-stability": "stable"
 }
