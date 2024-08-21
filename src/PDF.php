@@ -48,28 +48,6 @@ class PDF extends Mpdf
             ]
         );
 
-        $font_data = include(__DIR__ . '/fontdata.php');
-        if (is_array($font_data)) {
-            $this->fontdata = array_merge($this->fontdata, $font_data);
-
-            foreach ($font_data as $f => $fs) {
-                if (isset($fs['R']) && $fs['R']) {
-                    $this->available_unifonts[] = $f;
-                }
-                if (isset($fs['B']) && $fs['B']) {
-                    $this->available_unifonts[] = $f . 'B';
-                }
-                if (isset($fs['I']) && $fs['I']) {
-                    $this->available_unifonts[] = $f . 'I';
-                }
-                if (isset($fs['BI']) && $fs['BI']) {
-                    $this->available_unifonts[] = $f . 'BI';
-                }
-            }
-
-            $this->default_available_fonts = $this->available_unifonts;
-        }
-
         $this->SetTitle($this->getConfig('title'));
         $this->SetAuthor($this->getConfig('author'));
 
@@ -212,13 +190,8 @@ class PDF extends Mpdf
                     if (isset($fs[$style]) && $fs[$style]) {
                         $font = $fs[$style];
                         $font_file = $custom_font_path . '/' . $font;
-
-                        if (!file_exists(base_path('vendor/mpdf/mpdf/ttfonts/' . $font))) {
-                            if (file_exists($font_file)) {
-                                File::copy($font_file, base_path('vendor/mpdf/mpdf/ttfonts/' . $font));
-                            } else {
-                                throw new Exception('Your font file "' . $font_file . '" not exist.');
-                            }
+                        if (!file_exists($font_file)) {
+                            throw new Exception('Your font file "' . $font_file . '" not exist.');
                         }
                     }
                 }
@@ -235,9 +208,6 @@ class PDF extends Mpdf
      */
     protected function addFontData($fonts, $unicode = false)
     {
-
-        $font_data = include(__DIR__ . '/fontdata.php');
-
         foreach ($fonts as $key => $val) {
             $key = strtolower($key);
             if (is_array($val)) {
@@ -252,24 +222,11 @@ class PDF extends Mpdf
                     $val['useKashida'] = 75;
                     $val['useOTL'] = 0xFF;
                 }
-                $font_data[$key] = $val;
-
                 $this->fontdata[$key] = $val;
             }
         }
 
         $this->default_available_fonts = $this->available_unifonts;
-
-        $file = __DIR__ . '/fontdata.php';
-
-        $output = "<?php return " .
-            $this->array2str($font_data) . " ;";
-
-        $handle = fopen($file, 'w');
-
-        fwrite($handle, $output);
-
-        fclose($handle);
     }
 
     /**
