@@ -5,8 +5,12 @@ return [
 
     'author' => '',
 
-    'mode' => 'UTF-8',
-    
+    /**
+     * 'c'  Core - non-embedded fonts only
+     * 's'  Subsetting fonts - Embedded Unicode fonts
+     */
+    'mode' => 's',
+
     /*
      * Page size A4, A3, latter etc.
      */
@@ -27,7 +31,7 @@ return [
      *
      * don't forget the trailing slash!
      */
-    'custom_font_path' => base_path('/resources/fonts/'),
+    'custom_font_path' => public_path('fonts'),
 
     /*
      * Content direct ltr or rtl
@@ -69,12 +73,25 @@ return [
      */
     'orientation' => 'P',
 
-    /*
-     * Watermark
+    /**
+     * Show watermark
      */
     'show_watermark' => false,
+
+    /**
+     * Watermark text
+     */
     'watermark' => 'Document',
     'watermark_font' => 'sans-serif',
+
+    /**
+     * Set water mark display.
+     * 'fullpage', 'fullwidth', 'real', 'default', 'none'
+     */
     'display_mode' => 'fullpage',
+
+    /**
+     * Set value 0 to 1
+     */
     'watermark_text_alpha' => 0.1
 ];

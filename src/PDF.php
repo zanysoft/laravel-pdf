@@ -44,7 +44,7 @@ class PDF extends Mpdf
                 'margin_bottom' => $this->getConfig('margin_bottom', 10), // margin bottom
                 'margin_header' => $this->getConfig('margin_header', 0), // margin header
                 'margin_footer' => $this->getConfig('margin_footer', 0), // margin footer
-                'orientation' => $this->getConfig('orientation' , 'P'), // L - landscape, P - portrait
+                'orientation' => $this->getConfig('orientation', 'P'), // L - landscape, P - portrait
             ]
         );
 
@@ -96,8 +96,8 @@ class PDF extends Mpdf
         $this->watermarkTextAlpha = $this->getConfig('watermark_text_alpha', 0.1);
 
         if ($custom_font_path = Config::get('pdf.custom_font_path')) {
-            $custom_font_path = rtrim($custom_font_path . '/') . '/';
-            $this->AddFontDirectory(Config::get('pdf.custom_font_path'));
+            $custom_font_path = rtrim(str_replace('\\', '/', $custom_font_path) . '/') . '/';
+            $this->AddFontDirectory($custom_font_path);
         }
     }
 
@@ -203,12 +203,11 @@ class PDF extends Mpdf
         if (!$custom_font_path) {
             throw new Exception('custom_font_path not set in "config/pdf.php" file.');
         } else {
-            $custom_font_path = rtrim($custom_font_path, '/');
+            $custom_font_path = rtrim(str_replace('\\', '/', $custom_font_path), '/');
         }
 
         foreach ($fontdata as $f => $fs) {
             if (is_array($fs)) {
-
                 foreach (['R', 'B', 'I', 'BI'] as $style) {
                     if (isset($fs[$style]) && $fs[$style]) {
                         $font = $fs[$style];
