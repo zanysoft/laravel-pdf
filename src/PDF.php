@@ -262,7 +262,7 @@ class PDF extends Mpdf
      */
     public function embed(string $filename = '')
     {
-        return $this->Output($name ?: $this->filename, Destination::STRING_RETURN);
+        return $this->Output($filename ?: $this->filename, Destination::STRING_RETURN);
     }
 
     /**
