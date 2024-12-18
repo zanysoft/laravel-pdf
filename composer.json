@@ -21,7 +21,8 @@
     ],
     "require": {
         "php": "^8.0",
-        "mpdf/mpdf": "^8.0.10"
+        "mpdf/mpdf": "^8.0.10",
+        "illuminate/support": "^9|^10|^11"
     },
     "autoload": {
         "psr-4": {

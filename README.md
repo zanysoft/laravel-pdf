@@ -1,4 +1,4 @@
-# Laravel PDF: PDF generator for Laravel 5.x | 6.x | 7.x
+# Laravel PDF: PDF generator for Laravel
 
 > Easily generate PDF documents from HTML right inside of Laravel using this PDF wrapper.
 
@@ -48,60 +48,55 @@ The defaults configuration settings are set in `config/pdf.php`. Copy this file 
 To use Laravel PDF add something like this to one of your controllers. You can pass data to a view in `/resources/views`.
 
 ```php
-use PDF;
-
-function generate_pdf() {
-	$data = [
-		'foo' => 'bar'
-	];
-	$pdf = PDF::Make('document.pdf');
-	$pdf->loadView('pdf.document', $data);
-	return $pdf->stream();
-}
+    use ZanySoft\LaravelPDF\Facades\PDF;
+    
+    $data = ['foo' => 'bar'];
+    $pdf = PDF::make('document.pdf');
+    $pdf->loadView('pdf.document', $data);
+    
+    return $pdf->stream();
 ```
 or
 
 ```php
-use ZanySoft\LaravelPDF\PDF;
+    use ZanySoft\LaravelPDF\PDF;
 
-function generate_pdf() {
-	$data = [
-		'foo' => 'bar'
-	];
-	$pdf = new PDF();
-	$pdf->loadView('pdf.document', $data);
-	return $pdf->stream('document.pdf');
-}
+    $pdf = new PDF();
+    $pdf->loadView('pdf.document', $data);
+    
+    return $pdf->stream('document.pdf');
 
 ```
 
 If you want to generate from html content:
 ```php
     $content = "Hello this is first pdf file."
-	$pdf->loadHTML($content);
-	return $pdf->stream('document.pdf');
+    $pdf->loadHTML($content);
+    
+    return $pdf->stream('document.pdf');
 ```
 
 If you want to generate from files:
 ```php
     $file = "file.txt"
-	$pdf->loadFile($file);
-	return $pdf->stream('document.pdf');
+    $pdf->loadFile($file);
+    
+    return $pdf->stream('document.pdf');
 ```
 
 If you want download pdf file:
 ```php
-	return $pdf->embed('document.pdf');
+    return $pdf->embed('document.pdf');
 ```
 
 If you want to save pdf to server:
 ```php
-	return $pdf->save('with-complete-path/document.pdf');
+    return $pdf->save('with-complete-path/document.pdf');
 ```
 
 If you want add pdf file as attachment to email:
 ```php
-	return $pdf->embed('document.pdf');
+    return $pdf->embed('document.pdf');
 ```
 
 ### Headers and Footers
@@ -110,11 +105,11 @@ If you want to have headers and footers that appear on every page, add them to y
 
 ```html
 <htmlpageheader name="page-header">
-	Your Header Content
+    Your Header Content
 </htmlpageheader>
 
 <htmlpagefooter name="page-footer">
-	Your Footer Content
+    Your Footer Content
 </htmlpagefooter>
 ```
 
@@ -122,8 +117,8 @@ Now you just need to define them with the name attribute in your CSS:
 
 ```css
 @page {
-	header: page-header;
-	footer: page-footer;
+    header: page-header;
+    footer: page-footer;
 }
 ```
 
@@ -138,7 +133,7 @@ By default you can use all the fonts [shipped with mPDF](https://mpdf.github.io/
 You can use your own fonts in the generated PDFs. The TTF files have to be located in one folder, e.g. `/resources/fonts/`. Add this to your configuration file (`/config/pdf.php`):
 ```php
     return [
-	    'custom_font_path' => base_path('/resources/fonts/'), // don't forget the trailing slash!
+        'custom_font_path' => base_path('/resources/fonts/'), // don't forget the trailing slash!
     ];
 ```
 And then:
@@ -153,15 +148,15 @@ And then:
         // ...add as many as you want.
     );
 
-	$pdf->addCustomFont($fontdata, true);
-	// If your font file is unicode and "OpenType Layout" then set true. Default value is false.
+    $pdf->addCustomFont($fontdata, true);
+    // If your font file is unicode and "OpenType Layout" then set true. Default value is false.
 ```
 
 Now you can use the font in CSS:
 
 ```css
 body {
-	font-family: 'examplefont', sans-serif;
+    font-family: 'examplefont', sans-serif;
 }
 ```
 
@@ -177,14 +172,14 @@ There are a few permissions: `'copy'`, `'print'`, `'modify'`, `'annot-forms'`, `
 use PDF;
 
 function generate_pdf() {
-	$data = [
-		'foo' => 'bar'
-	];
-	$pdf = PDF::Make();
-	$pdf->SetProtection(['copy', 'print'], 'user_pass', 'owner_pass')
-	$pdf->loadView('pdf.document', $data);
-
-	return $pdf->stream('document.pdf');
+    $data = [
+        'foo' => 'bar'
+    ];
+    $pdf = PDF::make();
+    $pdf->SetProtection(['copy', 'print'], 'user_pass', 'owner_pass')
+    $pdf->loadView('pdf.document', $data);
+    
+    return $pdf->stream('document.pdf');
 }
 ```
 

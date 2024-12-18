@@ -85,7 +85,7 @@ return [
     'watermark_font' => 'sans-serif',
 
     /**
-     * Set water mark display.
+     * Set watermark display.
      * 'fullpage', 'fullwidth', 'real', 'default', 'none'
      */
     'display_mode' => 'fullpage',

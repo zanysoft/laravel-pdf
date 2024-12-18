@@ -6,21 +6,22 @@ use Exception;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\View;
 use Mpdf\Mpdf;
+use Mpdf\MpdfException;
 use Mpdf\Output\Destination;
 use Mpdf\Utils\UtfString;
-use View;
 
 class PDF extends Mpdf
 {
 
-    protected $config = [];
+    protected array $config = [];
 
-    protected $filename = 'document.pdf';
+    protected string $filename = 'document.pdf';
 
     /**
      * @param $configs
-     * @throws \Mpdf\MpdfException
+     * @throws MpdfException
      */
     public function __construct($configs = [])
     {
@@ -28,7 +29,7 @@ class PDF extends Mpdf
         $config = Config::get('pdf');
 
         if (!$config) {
-            $config = include(__DIR__ . '/../config/pdf.php');
+            $config = include(__DIR__.'/../config/pdf.php');
         }
 
         $this->config = array_merge($config, $configs);
@@ -74,16 +75,16 @@ class PDF extends Mpdf
         $this->watermarkTextAlpha = $this->getConfig('watermark_text_alpha', 0.1);
 
         if ($custom_font_path = Config::get('pdf.custom_font_path')) {
-            $custom_font_path = rtrim(str_replace('\\', '/', $custom_font_path) . '/') . '/';
+            $custom_font_path = rtrim(str_replace('\\', '/', $custom_font_path).'/').'/';
             $this->AddFontDirectory($custom_font_path);
         }
     }
 
     /**
-     * @param string $filename
+     * @param  string  $filename
      * @return $this
      */
-    public function Make(string $filename = ''): PDF
+    public function make(string $filename = ''): self
     {
         if ($filename) {
             $this->filename = $filename;
@@ -92,24 +93,20 @@ class PDF extends Mpdf
     }
 
     /**
-     * @param string $key
+     * @param  string  $key
      * @param $default
      * @return mixed
      */
-    protected function getConfig(string $key, $default = null)
+    protected function getConfig(string $key, $default = null): mixed
     {
-        if (isset($this->config[$key])) {
-            return $this->config[$key];
-        } else {
-            return Config::get('pdf.' . $key, $default);
-        }
+        return $this->config[$key] ?? Config::get('pdf.'.$key, $default);
     }
 
     /**
      * @param $dir
      * @return $this
      */
-    public function SetDirection($dir)
+    public function SetDirection($dir): self
     {
         $this->SetDirectionality($dir);
 
@@ -117,11 +114,11 @@ class PDF extends Mpdf
     }
 
     /**
-     * @param string|Htmlable $html
-     * @return void
-     * @throws \Mpdf\MpdfException
+     * @param  string|Htmlable  $html
+     * @return $this
+     * @throws MpdfException
      */
-    public function loadHTML(string|Htmlable $html)
+    public function loadHTML(string|Htmlable $html): self
     {
         if ($html instanceof Htmlable) {
             $html = $html->toHtml();
@@ -130,50 +127,54 @@ class PDF extends Mpdf
         $wm = UtfString::strcode2utf($html);
 
         $this->WriteHTML($wm);
+
+        return $this;
     }
 
     /**
-     * @param $file File path
-     * @param $config
-     * @return void
-     * @throws \Mpdf\MpdfException
+     * @param  string  $file
+     * @return $this
+     * @throws MpdfException
      */
-    public function loadFile(string $file)
+    public function loadFile(string $file): self
     {
         $this->WriteHTML(File::get($file));
+
+        return $this;
     }
 
     /**
      * @param $view
-     * @param $data
-     * @param $mergeData
-     * @return void
-     * @throws \Mpdf\MpdfException
+     * @param  array  $data
+     * @param  array  $mergeData
+     * @return $this
+     * @throws MpdfException
      */
-    public function loadView($view, $data = [], $mergeData = [])
+    public function loadView($view, array $data = [], array $mergeData = []): self
     {
         $this->WriteHTML(View::make($view, $data, $mergeData)->render());
+        return $this;
     }
 
     /**
      * Add custom font to pdf
      *
-     * $fontdata = [
-     *       'sourcesanspro' => [
+     * $fontData = [
+     *       'SourceSafe' => [
      *           'R' => 'SourceSansPro-Regular.ttf',
      *           'B' => 'SourceSansPro-Bold.ttf',
      *       ],
      *   ];
      *
-     * @param array $fontdata
-     * @param bool $is_unicode
-     * @return void
+     * @param  array  $fontData
+     * @param  bool  $is_unicode
+     * @return $this
      * @throws Exception
      */
-    public function addCustomFont(array $fontdata, bool $is_unicode = false)
+    public function addCustomFont(array $fontData, bool $is_unicode = false): self
     {
 
-        if (empty($fontdata) || !isset($fontdata)) {
+        if (empty($fontData)) {
             throw new Exception('Please add font data in EmbedFont() function.');
         }
 
@@ -184,29 +185,31 @@ class PDF extends Mpdf
             $custom_font_path = rtrim(str_replace('\\', '/', $custom_font_path), '/');
         }
 
-        foreach ($fontdata as $f => $fs) {
+        foreach ($fontData as $f => $fs) {
             if (is_array($fs)) {
                 foreach (['R', 'B', 'I', 'BI'] as $style) {
                     if (isset($fs[$style]) && $fs[$style]) {
                         $font = $fs[$style];
-                        $font_file = $custom_font_path . '/' . $font;
+                        $font_file = $custom_font_path.'/'.$font;
                         if (!file_exists($font_file)) {
-                            throw new Exception('Your font file "' . $font_file . '" not exist.');
+                            throw new Exception('Your font file "'.$font_file.'" not exist.');
                         }
                     }
                 }
             }
         }
 
-        $this->addFontData($fontdata, $is_unicode);
+        $this->addFontData($fontData, $is_unicode);
+
+        return $this;
     }
 
     /**
-     * @param $fonts
-     * @param $unicode
+     * @param  array  $fonts
+     * @param  bool  $unicode
      * @return void
      */
-    protected function addFontData($fonts, $unicode = false)
+    protected function addFontData(array $fonts, bool $unicode = false): void
     {
         foreach ($fonts as $key => $val) {
             $key = strtolower($key);
@@ -215,7 +218,7 @@ class PDF extends Mpdf
                 foreach (['R', 'B', 'I', 'BI'] as $style) {
                     if (isset($val[$style]) && $val[$style]) {
                         $font = $val[$style];
-                        $this->available_unifonts[] = $key . trim($style, 'R');
+                        $this->available_unifonts[] = $key.trim($style, 'R');
                     }
                 }
                 if ($unicode) {
@@ -233,19 +236,19 @@ class PDF extends Mpdf
      * @param $arr
      * @return string
      */
-    protected function array2str($arr)
+    protected function array2str($arr): string
     {
         $retStr = '';
         if (is_array($arr)) {
             $retStr .= "[ \r";
             foreach ($arr as $key => $val) {
                 if (is_array($val)) {
-                    $retStr .= "\t'" . $key . "' => " . $this->array2str($val) . ",\r";
+                    $retStr .= "\t'".$key."' => ".$this->array2str($val).",\r";
                 } else {
                     if (is_string($val)) {
-                        $retStr .= "\t'" . $key . "' => '" . $val . "',\r";
+                        $retStr .= "\t'".$key."' => '".$val."',\r";
                     } else {
-                        $retStr .= "\t'" . $key . "' => " . ($key == 'useOTL' ? '0xFF' : $val) . ",\r";
+                        $retStr .= "\t'".$key."' => ".($key == 'useOTL' ? '0xFF' : $val).",\r";
                     }
                 }
             }
@@ -256,41 +259,41 @@ class PDF extends Mpdf
     }
 
     /**
-     * @param string $name
+     * @param  string  $filename
      * @return string|null
-     * @throws \Mpdf\MpdfException
+     * @throws MpdfException
      */
-    public function embed(string $filename = '')
-    {
-        return $this->Output($name ?: $this->filename, Destination::STRING_RETURN);
-    }
-
-    /**
-     * @param string $filename
-     * @return string|null
-     * @throws \Mpdf\MpdfException
-     */
-    public function save(string $filename = '')
+    public function embed(string $filename = ''): ?string
     {
         return $this->Output($filename ?: $this->filename, Destination::STRING_RETURN);
     }
 
     /**
-     * @param string $filename
+     * @param  string  $filename
      * @return string|null
-     * @throws \Mpdf\MpdfException
+     * @throws MpdfException
      */
-    public function download(string $filename = '')
+    public function save(string $filename = ''): ?string
+    {
+        return $this->Output($filename ?: $this->filename, Destination::STRING_RETURN);
+    }
+
+    /**
+     * @param  string  $filename
+     * @return string|null
+     * @throws MpdfException
+     */
+    public function download(string $filename = ''): ?string
     {
         return $this->Output($filename ?: $this->filename, Destination::DOWNLOAD);
     }
 
     /**
-     * @param string $filename
+     * @param  string  $filename
      * @return string|null
-     * @throws \Mpdf\MpdfException
+     * @throws MpdfException
      */
-    public function stream(string $filename = '')
+    public function stream(string $filename = ''): ?string
     {
         return $this->Output($filename ?: $this->filename, Destination::INLINE);
     }
